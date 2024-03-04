@@ -7,7 +7,7 @@ import java.util.zip.Adler32;
 
 public class GameLoop extends Thread {
 
-    private static final double MAX_UPS = 60.0; //60 actualizaciones por segundo
+    private static final double MAX_UPS = 30.0; //30 actualizaciones por segundo
     private static final double UPS_PERIOD = 1E+3/MAX_UPS;
     private boolean isRunning = true;
     private SurfaceHolder surfaceHolder;
