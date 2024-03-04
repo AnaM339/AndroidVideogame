@@ -8,12 +8,16 @@ import android.graphics.Canvas;
 import android.util.Log;
 
 public class Player {
+    private static final double SPEED_PIXELS_PER_SECOND = 500.0;
+    private static final double MAX_SPEED = SPEED_PIXELS_PER_SECOND / GameLoop.MAX_UPS; //la division hace la conversion a pixeles per update
     private double positionX;
     private double positionY;
     private double radius;
     private Bitmap spaceship;
 
     private static final float IMAGE_SCALE_FACTOR = 0.07f;
+    private double velocityX;
+    private double velocityY;
 
     public Player(Context context, double positionX, double positionY, double radius) {
         this.positionX = positionX;
@@ -42,8 +46,12 @@ public class Player {
         }
     }
 
-    public void update() {
-        // Update logic for the player
+    //enlaza el joystick con el jugador en funcion del actuator
+    public void update(Joystick joystick) {
+        velocityX = joystick.getActuatorX()*MAX_SPEED;
+        velocityY = joystick.getActuatorY()*MAX_SPEED;
+        positionX += velocityX;
+        positionY += velocityY;
     }
 
     public void setPosition(double positionX, double positionY) {
