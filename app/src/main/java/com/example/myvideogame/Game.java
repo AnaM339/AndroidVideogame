@@ -3,6 +3,7 @@ package com.example.myvideogame;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -10,8 +11,13 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import com.example.myvideogame.object.Circle;
 import com.example.myvideogame.object.Enemy;
 import com.example.myvideogame.object.Player;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * La clase Game gestiona todos los objetos del juego y es responsable de la actualización de los estados
@@ -21,9 +27,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     private final Player player;
     private final Joystick joystick;
-    private final Enemy enemy;
+    //private final Enemy enemy;
     private GameLoop gameLoop;
-
+    private List<Enemy> enemyList = new ArrayList<Enemy>();
 
     public Game(Context context) {
         super(context);
@@ -37,7 +43,6 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         //inicializar objetos del juego
         joystick = new Joystick(275, 350, 70, 40);
         player = new Player(context, joystick,2*500, 500, 30);
-        enemy = new Enemy(context, player,500, 300);
 
         setFocusable(true);
     }
@@ -96,7 +101,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         //se dibujan los objetos del juego
         joystick.draw(canvas);
         player.draw(canvas);
-        enemy.draw(canvas);
+        for (Enemy enemy : enemyList) {
+            enemy.draw(canvas);
+        }
 
     }
 
@@ -124,7 +131,25 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         //actualiza el estado  de los objetos del juego
         joystick.update();
         player.update();
-        enemy.update();
+
+        //Crear enemigos en un momento determinado
+        if (Enemy.readyToSpawn()) {
+            enemyList.add(new Enemy(getContext(), player));
+        }
+
+        //Actualizar estado de cada enemigo
+        for (Enemy enemy : enemyList) {
+            enemy.update();
+        }
+
+        //Verificar colision entre los objetos del enemyList y el jugador
+        Iterator<Enemy> iteratorEnemy = enemyList.iterator();
+        while (iteratorEnemy.hasNext()) {
+            if (Circle.isColliding(iteratorEnemy.next(),player)) {
+                //quitar si colisionan
+                iteratorEnemy.remove();
+            }
+        }
     }
 
 }
