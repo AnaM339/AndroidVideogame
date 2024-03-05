@@ -3,8 +3,10 @@ package com.example.myvideogame;
 import android.graphics.Canvas;
 import android.view.SurfaceHolder;
 
-import java.util.zip.Adler32;
-
+/**
+ * El hilo de bucle de juego que gestiona las actualizaciones y renderizaciones del juego.
+ * Mantiene un ritmo constante de actualizaciones por segundo (UPS) y cuadros por segundo (FPS).
+ */
 public class GameLoop extends Thread {
 
     public static final double MAX_UPS = 30.0; //30 actualizaciones por segundo

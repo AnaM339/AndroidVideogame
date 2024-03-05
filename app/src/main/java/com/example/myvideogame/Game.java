@@ -10,14 +10,18 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import com.example.myvideogame.object.Enemy;
+import com.example.myvideogame.object.Player;
+
 /**
- * La clase Game gestiona todos los objetos del juego y es responsable de la actualizacion de los estados
- * y la renderizacion de los objetos en la pantalla
+ * La clase Game gestiona todos los objetos del juego y es responsable de la actualización de los estados
+ * y la renderización de los objetos en la pantalla.
  */
 public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     private final Player player;
     private final Joystick joystick;
+    private final Enemy enemy;
     private GameLoop gameLoop;
 
 
@@ -31,8 +35,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         this.gameLoop = new GameLoop(this, surfaceHolder);
 
         //inicializar objetos del juego
-        player = new Player(context, 1100, 500, 30);
         joystick = new Joystick(275, 350, 70, 40);
+        player = new Player(context, joystick,2*500, 500, 30);
+        enemy = new Enemy(context, player,500, 300);
 
         setFocusable(true);
     }
@@ -89,8 +94,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         drawFPS(canvas);
 
         //se dibujan los objetos del juego
-        player.draw(canvas);
         joystick.draw(canvas);
+        player.draw(canvas);
+        enemy.draw(canvas);
 
     }
 
@@ -116,8 +122,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     public void update() {
         //actualiza el estado  de los objetos del juego
-        player.update(joystick);
         joystick.update();
+        player.update();
+        enemy.update();
     }
 
 }

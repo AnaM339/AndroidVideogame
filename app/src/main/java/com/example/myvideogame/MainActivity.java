@@ -1,11 +1,13 @@
 package com.example.myvideogame;
 
 import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * La clase MainActivity es la actividad principal del juego.
+ * Inicia el juego al establecer el contenido de la vista en una instancia de la clase Game.
+ */
 public class MainActivity extends AppCompatActivity{
 
     @Override

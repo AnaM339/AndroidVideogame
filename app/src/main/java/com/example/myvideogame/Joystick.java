@@ -4,6 +4,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+/**
+ * La clase Joystick representa un controlador virtual en la pantalla
+ * que permite a los usuarios controlar la dirección de movimiento de un objeto en el juego.
+ */
 public class Joystick {
 
     private int outerCircleCenterPositionX;
