@@ -3,6 +3,8 @@ package com.example.myvideogame;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.drawable.AnimationDrawable;
+import android.media.MediaPlayer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -32,6 +34,13 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     private List<Spell> spellList = new ArrayList<Spell>();
     private int joystickPointerId = 0;
     private int numberOfSpellsToCast = 0;
+    private MediaPlayer mediaPlayer;
+    private boolean gameRunning = false;
+    private AnimationDrawable spaceshipAnimation;
+
+    public void startGame() {
+        gameRunning = true;
+    }
 
     public Game(Context context) {
         super(context);
@@ -45,6 +54,14 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         //inicializar objetos del juego
         joystick = new Joystick(275, 350, 70, 40);
         player = new Player(context, joystick,2*500, 500, 30);
+
+        //Cargar la animacion
+        spaceshipAnimation= (AnimationDrawable) ContextCompat.getDrawable(context, R.drawable.animation_spaceship);
+
+        //Comenzar la animacion
+        if (spaceshipAnimation != null) {
+            spaceshipAnimation.start();
+        }
 
         setFocusable(true);
     }
@@ -61,7 +78,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                 if (joystick.getIsPressed()) {
                     //el joystick ha sido presionado antes de este evento -> se realiza spell
                     numberOfSpellsToCast++;
-
+                    reproducirSonidoHechizo();
                 }else if(joystick.isPressed((double) event.getX(), (double) event.getY())) {
                     //el joystick esta presionado ahora (current event)
                     joystickPointerId = event.getPointerId(event.getActionIndex());
@@ -69,6 +86,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                 } else {
                     //el joystick no ha sido presionado antes de este evento y no esta presionado ahor -> se realiza nuevo spell
                     numberOfSpellsToCast++;
+                    reproducirSonidoHechizo();
                 }
                 return true;
             case MotionEvent.ACTION_MOVE:
@@ -94,6 +112,20 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         return super.onTouchEvent(event);
     }
 
+    private void reproducirSonidoHechizo() {
+        // Tu lógica para reproducir el sonido del hechizo aquí
+        mediaPlayer = MediaPlayer.create(getContext(), R.raw.hechizo);
+
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+
+        mediaPlayer.start();
+    }
+
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         gameLoop.startLoop();
@@ -114,9 +146,6 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
 
-        drawUPS(canvas);
-        drawFPS(canvas);
-
         //se dibujan los objetos del juego
         joystick.draw(canvas);
         player.draw(canvas);
@@ -127,29 +156,22 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
             spell.draw(canvas);
         }
 
-    }
+        //Dibujar animacion
+        if (spaceshipAnimation != null) {
+            int scaledWidth = 200;
+            int scaledHeight = (int) ((float) scaledWidth / spaceshipAnimation.getIntrinsicWidth() * spaceshipAnimation.getIntrinsicHeight());
+            spaceshipAnimation.setBounds(0, 0, scaledWidth, scaledHeight);
+            spaceshipAnimation.draw(canvas);
+        }
 
-    //muestra en la pantalla las actualizaciones/segundo de la pantalla (Update per second)
-    public void drawUPS(Canvas canvas) {
-        String averageUPS = Double.toString(gameLoop.getAverageUPS());
-        Paint paint = new Paint();
-        int color = ContextCompat.getColor(getContext(), R.color.teal_700);
-        paint.setColor(color);
-        paint.setTextSize(50);
-        canvas.drawText("UPS: " + averageUPS, 100, 100, paint);
-    }
-
-    //Frames per second
-    public void drawFPS(Canvas canvas) {
-        String averageFPS = Double.toString(gameLoop.getAverageFPS());
-        Paint paint = new Paint();
-        int color = ContextCompat.getColor(getContext(), R.color.purple_700);
-        paint.setColor(color);
-        paint.setTextSize(50);
-        canvas.drawText("FPS: " + averageFPS, 100, 200, paint);
     }
 
     public void update() {
+
+        if (!gameRunning) {
+            return;
+        }
+
         //actualiza el estado  de los objetos del juego
         joystick.update();
         player.update();
@@ -193,6 +215,11 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
             }
+        }
+
+        //forzar la animacion a redibujarse
+        if (spaceshipAnimation != null) {
+            spaceshipAnimation.invalidateSelf();
         }
     }
 

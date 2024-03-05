@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">My Videogame</string>
+    <string name="juego_nuevo">Juego nuevo</string>
+
 </resources>
