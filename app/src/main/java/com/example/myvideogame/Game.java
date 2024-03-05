@@ -3,7 +3,6 @@ package com.example.myvideogame;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -14,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import com.example.myvideogame.object.Circle;
 import com.example.myvideogame.object.Enemy;
 import com.example.myvideogame.object.Player;
+import com.example.myvideogame.object.Spell;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,9 +27,11 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     private final Player player;
     private final Joystick joystick;
-    //private final Enemy enemy;
     private GameLoop gameLoop;
     private List<Enemy> enemyList = new ArrayList<Enemy>();
+    private List<Spell> spellList = new ArrayList<Spell>();
+    private int joystickPointerId = 0;
+    private int numberOfSpellsToCast = 0;
 
     public Game(Context context) {
         super(context);
@@ -53,22 +55,39 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     public boolean onTouchEvent(MotionEvent event) {
 
         //Gestionar eventos touch
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if(joystick.isPressed((double) event.getX(), (double) event.getY())) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN: //el primer punto que se toca en la pantalla
+            case MotionEvent.ACTION_POINTER_DOWN: //permite gestionar puntos de tacto multiple
+                if (joystick.getIsPressed()) {
+                    //el joystick ha sido presionado antes de este evento -> se realiza spell
+                    numberOfSpellsToCast++;
+
+                }else if(joystick.isPressed((double) event.getX(), (double) event.getY())) {
+                    //el joystick esta presionado ahora (current event)
+                    joystickPointerId = event.getPointerId(event.getActionIndex());
                     joystick.setIsPressed(true);
+                } else {
+                    //el joystick no ha sido presionado antes de este evento y no esta presionado ahor -> se realiza nuevo spell
+                    numberOfSpellsToCast++;
                 }
                 return true;
             case MotionEvent.ACTION_MOVE:
+                ////el joystick ha sido presionado antes de este evento y se esta moviendo ahora
                 if (joystick.getIsPressed()) {
                     //si el joystick es set y movido el actuador se establece en
                     // la posicion de la pantalla donde el jugador mueve su dedo
                     joystick.setActuator((double) event.getX(), (double) event.getY());
                 }
                 return true;
-            case MotionEvent.ACTION_UP: //cuando el jugador levanta el dedo
-                joystick.setIsPressed(false);
-                joystick.resetActuator();
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+                if (joystickPointerId == event.getPointerId(event.getActionIndex())) {
+                    //cuando el jugador levanta el dedo -> setPressed esta falso, se resetea el actuador
+                    joystick.setIsPressed(false);
+                    joystick.resetActuator();
+                }
+
                 return true;
          }
 
@@ -104,6 +123,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         for (Enemy enemy : enemyList) {
             enemy.draw(canvas);
         }
+        for (Spell spell : spellList) {
+            spell.draw(canvas);
+        }
 
     }
 
@@ -138,16 +160,38 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         //Actualizar estado de cada enemigo
+        while (numberOfSpellsToCast > 0) {
+            spellList.add(new Spell(getContext(),player));
+            numberOfSpellsToCast--;
+        }
         for (Enemy enemy : enemyList) {
             enemy.update();
         }
 
-        //Verificar colision entre los objetos del enemyList y el jugador
+        //Actualizar estado de cada spell
+        for (Spell spell : spellList) {
+            spell.update();
+        }
+
+        //Verificar colision entre los objetos del enemyList y el jugador y sus spells
         Iterator<Enemy> iteratorEnemy = enemyList.iterator();
         while (iteratorEnemy.hasNext()) {
-            if (Circle.isColliding(iteratorEnemy.next(),player)) {
-                //quitar si colisionan
+            Circle enemy = iteratorEnemy.next();
+            if (Circle.isColliding(enemy, player)) {
+                // desaparece enemigo si se choca con el jugador
                 iteratorEnemy.remove();
+                continue;
+            }
+
+            Iterator<Spell> iteratorSpell = spellList.iterator();
+            while (iteratorSpell.hasNext()) {
+                Circle spell = iteratorSpell.next();
+                // desaparece enemigo si le toca un spell
+                if (Circle.isColliding(spell, enemy)) {
+                    iteratorSpell.remove();
+                    iteratorEnemy.remove();
+                    break;
+                }
             }
         }
     }

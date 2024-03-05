@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 import com.example.myvideogame.GameLoop;
 import com.example.myvideogame.Joystick;
 import com.example.myvideogame.R;
+import com.example.myvideogame.Utils;
 
 /**
  * La clase Player representa al jugador en el juego y controla su posición y comportamiento.
@@ -32,6 +33,15 @@ public class Player extends Circle {
             //actualizar posicion
             positionX += velocityX;
             positionY += velocityY;
+
+            //actualiza direccion
+            if (velocityX != 0 || velocityY != 0) {
+                //Normalizar velocidad para obtener la direccion (unit vector of velocity)
+                double distance = Utils.getDistanceBetweenPoints(0,0,velocityX, velocityY);
+                directionX = velocityX/distance;
+                directionY = velocityY/distance;
+
+            }
         }
     }
 }

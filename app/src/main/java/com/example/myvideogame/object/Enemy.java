@@ -43,7 +43,7 @@ public class Enemy extends Circle {
                 ContextCompat.getColor(context, R.color.enemy),
                 Math.random() * 1000,
                 Math.random() * 1000,
-                30
+                40
         );
         this.player = player;
     }

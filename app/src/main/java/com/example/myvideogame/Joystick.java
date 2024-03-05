@@ -76,10 +76,12 @@ public class Joystick {
 
     public boolean isPressed(double touchPositionX, double touchPositionY) {
 
-        //se usa la teorema de Pitagoras para resolver esta distancia
-        joystickCenterToTouchDistance = Math.sqrt(
-                Math.pow(outerCircleCenterPositionX -touchPositionX, 2) +
-                Math.pow(outerCircleCenterPositionY - touchPositionY, 2)
+        //se usa el metodo definido en la clase Utils
+        joystickCenterToTouchDistance = Utils.getDistanceBetweenPoints(
+                outerCircleCenterPositionX,
+                outerCircleCenterPositionY,
+                touchPositionX,
+                touchPositionY
         );
 
         //la distancia del centro del joystick hasta el punto donde el usuario toca la pantalla
@@ -105,7 +107,7 @@ public class Joystick {
 
         //distancias absolutas
         //se calcula con el teorema de Pitagoras
-        double deltaDistance = Math.sqrt(Math.pow(deltaX,2) + Math.pow(deltaY,2));
+        double deltaDistance = Utils.getDistanceBetweenPoints(0,0,deltaX, deltaY);
 
         if(deltaDistance < outerCircleRadius) {
             // se calcula la distancia en la que se ha tirado del joystick
